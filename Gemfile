@@ -1,0 +1,2 @@
+gem "ffi"
+gem "pry"
