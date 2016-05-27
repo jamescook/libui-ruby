@@ -7,7 +7,6 @@ WIP Ruby bindings for [LibUI](https://github.com/andlabs/libui)
 compiled libui library
 - `bundle exec ruby examples/control_gallery.rb`
 
-
 #### Screenshots
 
 ![Control Gallery](/screenshot.png?raw=true)

@@ -70,7 +70,13 @@ inner = LibUI::Ext.uiNewVerticalBox
 LibUI::Ext.uiBoxSetPadded(inner, 1)
 LibUI::Ext.uiGroupSetChild(group, inner)
 
-LibUI::Ext.uiBoxAppend(inner, LibUI::Ext.uiNewButton("Button"), 0)
+button = LibUI::Ext.uiNewButton("Button")
+button_clicked_callback = Proc.new do |ptr|
+  LibUI::Ext.uiMsgBox(MAIN_WINDOW, "Information", "You clicked the button")
+end
+
+LibUI::Ext.uiButtonOnClicked(button, button_clicked_callback, nil)
+LibUI::Ext.uiBoxAppend(inner, button, 0)
 LibUI::Ext.uiBoxAppend(inner, LibUI::Ext.uiNewCheckbox("Checkbox"), 0)
 LibUI::Ext.uiBoxAppend(inner, LibUI::Ext.uiNewLabel("Label"), 0)
 LibUI::Ext.uiBoxAppend(inner, LibUI::Ext.uiNewHorizontalSeparator, 0)
@@ -93,11 +99,18 @@ LibUI::Ext.uiBoxSetPadded(inner, 1)
 LibUI::Ext.uiGroupSetChild(group, inner)
 
 spinbox = LibUI::Ext.uiNewSpinbox(0, 100)
-#LibUI::Ext.uiSpinboxOnChanged(spinbox, onSpinboxChanged, nil)
+spinbox_changed_callback = Proc.new do |ptr|
+  puts "New Spinbox value: #{LibUI::Ext.uiSpinboxValue(ptr)}"
+end
+LibUI::Ext.uiSpinboxSetValue(spinbox,42)
+LibUI::Ext.uiSpinboxOnChanged(spinbox, spinbox_changed_callback, nil)
 LibUI::Ext.uiBoxAppend(inner, spinbox, 0);
 
 slider = LibUI::Ext.uiNewSlider(0, 100)
-#libUIuiSliderOnChanged(slider, onSliderChanged, nil)
+slider_changed_callback = Proc.new do |ptr|
+  puts "New Slider value: #{LibUI::Ext.uiSliderValue(ptr)}"
+end
+LibUI::Ext.uiSliderOnChanged(slider, slider_changed_callback, nil)
 LibUI::Ext.uiBoxAppend(inner, slider, 0)
 
 progressbar = LibUI::Ext.uiNewProgressBar
@@ -111,11 +124,15 @@ inner = LibUI::Ext.uiNewVerticalBox
 LibUI::Ext.uiBoxSetPadded(inner, 1)
 LibUI::Ext.uiGroupSetChild(group, inner)
 
+combobox_selected_callback = Proc.new do |ptr|
+  puts "New combobox selection: #{LibUI::Ext.uiComboboxSelected(ptr)}"
+end
 cbox = LibUI::Ext.uiNewCombobox
 LibUI::Ext.uiComboboxAppend(cbox, "Combobox Item 1")
 LibUI::Ext.uiComboboxAppend(cbox, "Combobox Item 2")
 LibUI::Ext.uiComboboxAppend(cbox, "Combobox Item 3")
 LibUI::Ext.uiBoxAppend(inner, cbox, 0)
+LibUI::Ext.uiComboboxOnSelected(cbox, combobox_selected_callback, nil)
 
 cbox = LibUI::Ext.uiNewEditableCombobox
 LibUI::Ext.uiComboboxAppend(cbox, "Editable Item 1")
@@ -130,11 +147,20 @@ LibUI::Ext.uiRadioButtonsAppend(rb, "Radio Button 3")
 LibUI::Ext.uiBoxAppend(inner, rb, 1)
 
 tab = LibUI::Ext.uiNewTab
-LibUI::Ext.uiTabAppend(tab, "Page 1", LibUI::Ext.uiNewHorizontalBox)
+hbox1 = LibUI::Ext.uiNewHorizontalBox 
+LibUI::Ext.uiTabAppend(tab, "Page 1", hbox1)
 LibUI::Ext.uiTabAppend(tab, "Page 2", LibUI::Ext.uiNewHorizontalBox)
 LibUI::Ext.uiTabAppend(tab, "Page 3", LibUI::Ext.uiNewHorizontalBox)
 LibUI::Ext.uiBoxAppend(inner2, tab, 1)
 
+text_changed_callback = Proc.new do |ptr|
+  puts "Current textbox data: '#{LibUI::Ext.uiEntryText(ptr)}'"
+end
+
+text_entry = LibUI::Ext.uiNewEntry
+LibUI::Ext.uiEntrySetText text_entry, "Please enter your feelings"
+LibUI::Ext.uiEntryOnChanged(text_entry, text_changed_callback, nil)
+LibUI::Ext.uiBoxAppend(hbox1, text_entry, 1)
 
 MAIN_WINDOW = LibUI::Ext.uiNewWindow("hello world", 600, 600, 1)
 LibUI::Ext.uiWindowSetMargined(MAIN_WINDOW, 1)

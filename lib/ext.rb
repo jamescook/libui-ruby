@@ -53,6 +53,7 @@ module LibUI
     class EditableCombobox < Control; end
     class Radiobuttons     < Control; end
     class Tab              < Control; end
+    class TextEntry        < Control; end
 
     attach_function :uiInit,            [ InitOptions ], :string
     attach_function :uiControlShow,     [ :pointer ],    :void
@@ -121,7 +122,9 @@ module LibUI
 
     attach_function :uiNewGroup,         [:string],         Group
     attach_function :uiGroupSetMargined, [Group, :int],     :void
+    attach_function :uiGroupMargined,    [Group],           :int
     attach_function :uiGroupSetChild,    [Group, :pointer], :void
+    attach_function :uiGroupSetTitle,    [Group, :string],  :void
 
     attach_function :uiNewDatePicker,          [],           DatePicker
     attach_function :uiNewTimePicker,          [],           TimePicker
@@ -130,19 +133,91 @@ module LibUI
     attach_function :uiNewColorButton,         [],           ColorButton
     attach_function :uiNewHorizontalSeparator, [],           Separator
     attach_function :uiNewProgressBar,         [],           ProgressBar
-    attach_function :uiNewButton,              [:string],    Button
     attach_function :uiNewLabel,               [:string],    Label
-    attach_function :uiNewSpinbox,             [:int, :int], SpinBox
-    attach_function :uiNewSlider,              [:int, :int], Slider
+    attach_function :uiLabelSetText,           [:string],    :void
+    attach_function :uiLabelText,              [Label],      :string
 
+    callback :button_clicked_callback,  [:pointer], :int
+    attach_function :uiNewButton,       [:string], Button
+    attach_function :uiButtonSetText,   [Button, :string], :void
+    attach_function :uiButtonOnClicked, [Button, :button_clicked_callback, :pointer], :void
+
+    callback :slider_changed_callback,         [:pointer],           :int
+    attach_function :uiNewSlider,              [:intmax_t, :intmax_t], Slider
+    attach_function :uiSliderSetValue,         [Slider, :intmax_t],    :void
+    attach_function :uiSliderValue,            [Slider],               :intmax_t
+    attach_function :uiSliderOnChanged, [
+      Slider,
+      :slider_changed_callback,
+      :pointer
+    ], :void
+
+    callback :spinbox_changed_callback,        [:pointer],           :int
+    attach_function :uiNewSpinbox,             [:int, :int],         SpinBox
+    attach_function :uiSpinboxValue,           [SpinBox],            :intmax_t
+    attach_function :uiSpinboxSetValue,        [SpinBox, :intmax_t], :void
+    attach_function :uiSpinboxOnChanged, [
+      SpinBox,
+      :spinbox_changed_callback,
+      :pointer
+    ], :void
+
+    callback :combobox_selected_callback,   [:pointer],          :int
     attach_function :uiNewCombobox,         [],                  Combobox
+    attach_function :uiComboboxSelected,    [Combobox],          :intmax_t
     attach_function :uiComboboxAppend,      [Combobox, :string], :void
-    attach_function :uiNewEditableCombobox, [],                  EditableCombobox
+    attach_function :uiComboboxSetSelected, [Combobox, :intmax_t], :void # int is the index
+    attach_function :uiComboboxOnSelected,  [
+      Combobox,
+      :combobox_selected_callback,
+      :pointer
+    ], :void
+
+    attach_function :uiNewEditableCombobox,       [], EditableCombobox
 
     attach_function :uiNewRadioButtons,     [],                      Radiobuttons
     attach_function :uiRadioButtonsAppend,  [Radiobuttons, :string], Radiobuttons
 
     attach_function :uiNewTab,    [],                      Tab
     attach_function :uiTabAppend, [Tab, :string, Control], :void
+    attach_function :uiTabInsertAt, [
+      Tab, 
+      :string,    # the tab 'name'
+      :uintmax_t, # "before"
+      Control
+    ], :void
+
+    attach_function :uiTabDelete, [
+      Tab,
+      :uintmax_t # index 
+     ], :void
+
+    attach_function :uiTabNumPages, [Tab], :uintmax_t
+    attach_function :uiTabMargined, [
+      Tab,
+      :uintmax_t # the 'page'
+    ], :int
+    
+    attach_function :uiTabSetMargined, [
+      Tab,
+      :uintmax_t, # 'page'
+      :int  # 'margined'
+    ], :void
+
+
+    attach_function :uiNewEntry,         [],                   TextEntry
+    attach_function :uiEntrySetText,     [TextEntry, :string], TextEntry
+    attach_function :uiEntryText,        [TextEntry],          :string
+    attach_function :uiEntryReadOnly,    [TextEntry],          :int
+    attach_function :uiEntrySetReadOnly, [TextEntry],          :void
+    callback :text_entry_on_change, [:pointer], :int
+    attach_function :uiEntryOnChanged,
+      [TextEntry,
+       :text_entry_on_change,
+       :pointer ],
+       :void
+
+    attach_function :uiMsgBox, [Window, :string, :string], :void # title and description
+    attach_function :uiMsgBoxError, [Window, :string, :string], :void # title and description
   end
 end
