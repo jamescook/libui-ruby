@@ -5,8 +5,14 @@ module LibUI
     extend FFI::Library
     ffi_lib Config.instance.library_path
 
+    DEFAULT_MITER_LIMIT = 10
+
     class InitOptions < FFI::Struct
       layout :size, :size_t
+    end
+
+    class DrawContext < FFI::Struct
+      layout :c, :pointer
     end
 
     class Control < FFI::Struct
@@ -25,16 +31,9 @@ module LibUI
              :enable,         :pointer,
              :disable,        :pointer
     end
-
-    class Window < FFI::Struct
-      layout :c, :pointer, #control
-             :w, :pointer, #window
-             :child, Control,
-             :onClosing, :pointer
-    end
-
-    class Box              < Control;end
-    class Checkbox         < Control;end
+   
+    class Box              < Control; end
+    class Checkbox         < Control; end
     class Menu             < Control; end
     class MenuItem         < Control; end
     class Group            < Control; end
@@ -54,6 +53,81 @@ module LibUI
     class Radiobuttons     < Control; end
     class Tab              < Control; end
     class TextEntry        < Control; end
+    class Area             < Control; end
+    class DrawPath         < Control; end
+
+    class Window < FFI::Struct
+      layout :c, :pointer, #control
+             :w, :pointer, #window
+             :child, Control,
+             :onClosing, :pointer
+    end
+
+    class AreaDrawParams < FFI::Struct
+      layout :draw_context, :pointer, #DrawContext, uiDrawContext
+        :width, :double,
+        :height, :double,
+        :clip_x, :double,
+        :clip_y, :double,
+        :clip_width, :double,
+        :clip_height, :double
+    end
+
+    class AreaHandler < FFI::Struct
+      # void (*Draw)(uiAreaHandler *, uiArea *, uiAreaDrawParams *);
+      layout :draw_event, callback([
+        LibUI::Ext::AreaHandler.ptr,
+        LibUI::Ext::Area,
+        LibUI::Ext::AreaDrawParams.ptr], :void),
+        # void (*MouseEvent)(uiAreaHandler *, uiArea *, uiAreaMouseEvent *);
+        :mouse_event, callback([:pointer, :pointer, :pointer], :void),
+        #	void (*MouseCrossed)(uiAreaHandler *, uiArea *, int left);
+        :mouse_crossed, callback([:pointer, :pointer, :int], :void),
+        # void (*DragBroken)(uiAreaHandler *, uiArea *);
+        :drag_broken, callback([:pointer, :pointer], :void),
+        # int (*KeyEvent)(uiAreaHandler *, uiArea *, uiAreaKeyEvent *);
+        :key_event, callback([:pointer, :pointer, :pointer], :int)
+    end
+
+    LINE_CAPS  = enum(:flat, :round, :square)
+    LINE_JOINS = enum(:miter, :round, :bevel)
+    class DrawStrokeParams < FFI::Struct
+      layout :cap, LINE_CAPS,
+        :join, LINE_JOINS,
+        :thickness, :double,
+        :miter_limit, :double,
+        :dashes, :pointer, #double?
+        :num_dashes, :size_t,
+        :dash_phase, :double
+    end
+
+    BRUSH_TYPES = enum(:solid, :linear_gradient, :radial_gradient, :image)
+    FILL_MODES  = enum(:winding, :alternate)
+
+    class DrawBrush < FFI::Struct
+      layout :type,  BRUSH_TYPES,
+             :red,   :double,
+             :green, :double,
+             :blue,  :double,
+             :alpha, :double,
+
+             :x0, :double, # linear: start X, radial: start X
+             :y0, :double, # linear: start Y, radial: start Y
+             :x1, :double, # linear: end X, radial: outer circle center X
+             :y1, :double, # linear: end Y, radial: outer circle center Y
+             :outer_radius, :double, # radial gradients only
+             :stops, :pointer, # pointer to uiDrawBrushGradientStop
+             :num_stops, :size_t
+    end
+
+    class DrawMatrix < FFI::Struct
+      layout :m11, :double,
+        :m12, :double,
+        :m21, :double,
+        :m22, :double,
+        :m31, :double,
+        :m32, :double
+    end
 
     attach_function :uiInit,            [ InitOptions ], :string
     attach_function :uiControlShow,     [ :pointer ],    :void
@@ -130,9 +204,32 @@ module LibUI
     attach_function :uiNewTimePicker,          [],           TimePicker
     attach_function :uiNewDateTimePicker,      [],           DateTimePicker
     attach_function :uiNewFontButton,          [],           FontButton
-    attach_function :uiNewColorButton,         [],           ColorButton
     attach_function :uiNewHorizontalSeparator, [],           Separator
     attach_function :uiNewProgressBar,         [],           ProgressBar
+
+    attach_function :uiNewColorButton,         [],           ColorButton
+    attach_function :uiColorButtonColor, [
+      ColorButton,
+      :pointer, #red, double
+      :pointer, #green, double
+      :pointer, #blue, double
+      :pointer #alpha, double
+    ], :void
+
+    attach_function :uiColorButtonSetColor, [
+      ColorButton,
+      :double,  #red
+      :double,  #green
+      :double,  #blue
+      :double #alpha
+    ], :void
+    callback :color_changed_callback, [:pointer], :int
+    attach_function :uiColorButtonOnChanged,
+      [ColorButton,
+       :color_changed_callback,
+       :pointer
+     ], :void
+    
     attach_function :uiNewLabel,               [:string],    Label
     attach_function :uiLabelSetText,           [:string],    :void
     attach_function :uiLabelText,              [Label],      :string
@@ -143,9 +240,9 @@ module LibUI
     attach_function :uiButtonOnClicked, [Button, :button_clicked_callback, :pointer], :void
 
     callback :slider_changed_callback,         [:pointer],           :int
-    attach_function :uiNewSlider,              [:intmax_t, :intmax_t], Slider
-    attach_function :uiSliderSetValue,         [Slider, :intmax_t],    :void
-    attach_function :uiSliderValue,            [Slider],               :intmax_t
+    attach_function :uiNewSlider,              [:long_long, :long_long], Slider
+    attach_function :uiSliderSetValue,         [Slider, :long_long],    :void
+    attach_function :uiSliderValue,            [Slider],               :long_long
     attach_function :uiSliderOnChanged, [
       Slider,
       :slider_changed_callback,
@@ -154,8 +251,8 @@ module LibUI
 
     callback :spinbox_changed_callback,        [:pointer],           :int
     attach_function :uiNewSpinbox,             [:int, :int],         SpinBox
-    attach_function :uiSpinboxValue,           [SpinBox],            :intmax_t
-    attach_function :uiSpinboxSetValue,        [SpinBox, :intmax_t], :void
+    attach_function :uiSpinboxValue,           [SpinBox],            :long_long
+    attach_function :uiSpinboxSetValue,        [SpinBox, :long_long], :void
     attach_function :uiSpinboxOnChanged, [
       SpinBox,
       :spinbox_changed_callback,
@@ -164,9 +261,9 @@ module LibUI
 
     callback :combobox_selected_callback,   [:pointer],          :int
     attach_function :uiNewCombobox,         [],                  Combobox
-    attach_function :uiComboboxSelected,    [Combobox],          :intmax_t
+    attach_function :uiComboboxSelected,    [Combobox],          :long_long
     attach_function :uiComboboxAppend,      [Combobox, :string], :void
-    attach_function :uiComboboxSetSelected, [Combobox, :intmax_t], :void # int is the index
+    attach_function :uiComboboxSetSelected, [Combobox, :long_long], :void # int is the index
     attach_function :uiComboboxOnSelected,  [
       Combobox,
       :combobox_selected_callback,
@@ -183,24 +280,24 @@ module LibUI
     attach_function :uiTabInsertAt, [
       Tab, 
       :string,    # the tab 'name'
-      :uintmax_t, # "before"
+      :ulong_long, # "before"
       Control
     ], :void
 
     attach_function :uiTabDelete, [
       Tab,
-      :uintmax_t # index 
+      :ulong_long # index 
      ], :void
 
-    attach_function :uiTabNumPages, [Tab], :uintmax_t
+    attach_function :uiTabNumPages, [Tab], :ulong_long
     attach_function :uiTabMargined, [
       Tab,
-      :uintmax_t # the 'page'
+      :ulong_long # the 'page'
     ], :int
     
     attach_function :uiTabSetMargined, [
       Tab,
-      :uintmax_t, # 'page'
+      :ulong_long, # 'page'
       :int  # 'margined'
     ], :void
 
@@ -219,5 +316,32 @@ module LibUI
 
     attach_function :uiMsgBox, [Window, :string, :string], :void # title and description
     attach_function :uiMsgBoxError, [Window, :string, :string], :void # title and description
+
+    attach_function :uiNewArea, [AreaHandler], Area
+    attach_function :uiAreaQueueRedrawAll, [Area], :void
+
+    attach_function :uiDrawNewPath, [FILL_MODES], DrawPath
+    
+    attach_function :uiDrawPathAddRectangle, [
+      DrawPath,
+      :double, #x
+      :double, #y
+      :double, #width
+      :double  #height
+    ], :void
+    attach_function :uiDrawPathEnd, [DrawPath], :void
+    #_UI_EXTERN void uiDrawFill(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b);
+    attach_function :uiDrawFill, [:pointer, DrawPath, DrawBrush], :void
+    attach_function :uiDrawFreePath, [DrawPath], :void
+    attach_function :uiDrawPathNewFigure, [DrawPath, :double, :double], :void # x and y
+    attach_function :uiDrawPathLineTo, [DrawPath, :double, :double], :void # x and y
+    attach_function :uiDrawPathCloseFigure, [DrawPath], :void
+    
+    #_UI_EXTERN void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStrokeParams *p);
+    attach_function :uiDrawStroke, [:pointer, :pointer, :pointer, :pointer], :void
+
+    attach_function :uiDrawMatrixSetIdentity, [DrawMatrix], :void
+    attach_function :uiDrawMatrixTranslate, [DrawMatrix, :double, :double], :void #left, top
+    attach_function :uiDrawTransform, [:pointer, DrawMatrix], :void #context
   end
 end

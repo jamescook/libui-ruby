@@ -9,4 +9,5 @@ compiled libui library
 
 #### Screenshots
 
-![Control Gallery](/screenshot.png?raw=true)
+![Control Gallery](/screenshots/controlgallery.png?raw=true)
+![Histogram](/screenshots/histogram.png?raw=true)
