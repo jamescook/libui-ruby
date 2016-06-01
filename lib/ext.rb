@@ -55,6 +55,8 @@ module LibUI
     class TextEntry        < Control; end
     class Area             < Control; end
     class DrawPath         < Control; end
+    class TextFont         < Control; end
+    class TextLayout       < Control; end
 
     class Window < FFI::Struct
       layout :c, :pointer, #control
@@ -88,9 +90,65 @@ module LibUI
         # int (*KeyEvent)(uiAreaHandler *, uiArea *, uiAreaKeyEvent *);
         :key_event, callback([:pointer, :pointer, :pointer], :int)
     end
-
+    KEY_MODIFIERS = enum(:ctrl, 1 << 0, :alt, 1 << 1, :shift, 1 << 2, :super, 1 << 3)
     LINE_CAPS  = enum(:flat, :round, :square)
     LINE_JOINS = enum(:miter, :round, :bevel)
+    TEXT_WEIGHTS = enum(:thin,
+      :ultra_light,
+      :light, :book,
+      :normal,
+      :medium,
+      :semi_bold,
+      :bold,
+      :ultra_bold,
+      :heavy,
+      :ultra_heavy
+    )
+
+    TEXT_ITALIC = enum(:normal, :oblique, :italic)
+    TEXT_STRETCH = enum(:ultra_condensed,
+      :extra_condensed,
+      :condensed,
+      :semi_condensed,
+      :normal,
+      :semi_expanded,
+      :expanded,
+      :extra_expanded,
+      :ultra_expanded
+    )
+
+    class AreaMouseEvent < FFI::Struct
+      layout :x,      :double,
+        :y,           :double,
+        :area_width,  :double,
+        :area_height, :double,
+        :down,        :uintmax_t,
+        :up,          :uintmax_t,
+        :count,       :uintmax_t,
+        :modifiers,   KEY_MODIFIERS,
+        :held1to64,   :uint64_t
+    end
+
+    class FontFamilies < FFI::Struct
+      layout :ff, :pointer
+    end
+
+    class FontDescriptor < FFI::Struct
+      layout :family, :string,
+        :size, :double,
+        :weight, TEXT_WEIGHTS,
+        :italic, TEXT_ITALIC,
+        :stretch, TEXT_STRETCH
+    end
+
+    class FontMetrics < FFI::Struct
+      layout :ascent, :double,
+        :descent, :double,
+        :leading, :double,
+        :underline_pos, :double,
+        :underline_thickness, :double
+    end
+
     class DrawStrokeParams < FFI::Struct
       layout :cap, LINE_CAPS,
         :join, LINE_JOINS,
@@ -342,6 +400,102 @@ module LibUI
 
     attach_function :uiDrawMatrixSetIdentity, [DrawMatrix], :void
     attach_function :uiDrawMatrixTranslate, [DrawMatrix, :double, :double], :void #left, top
+    attach_function :uiDrawMatrixScale, [
+      DrawMatrix,
+      :double, #xCenter
+      :double, #yCenter
+      :double, #x
+      :double, #y
+    ], :void
+
+    attach_function :uiDrawMatrixRotate, [
+      DrawMatrix,
+      :double, #x
+      :double, #y
+      :double  #amount
+    ], :void
+
+    attach_function :uiDrawMatrixSkew, [
+      DrawMatrix,
+      :double, #x
+      :double, #y
+      :double, #xamount
+      :double  #yamount
+    ], :void
+
+    attach_function :uiDrawMatrixMultiply, [
+      DrawMatrix, # dest
+      DrawMatrix  # src
+    ], :void
+
+    attach_function :uiDrawMatrixInvertible, [
+      DrawMatrix # m
+    ], :void
+
+    attach_function :uiDrawMatrixInvert, [
+      DrawMatrix # m
+    ], :void
+
+    attach_function :uiDrawMatrixTransformPoint, [
+      DrawMatrix, # m
+      :double,    # x
+      :double     # y
+    ], :void
+
+    attach_function :uiDrawMatrixTransformSize, [
+      DrawMatrix, # m
+      :double,    # x
+      :double     # y
+    ], :void
+
     attach_function :uiDrawTransform, [:pointer, DrawMatrix], :void #context
+
+    attach_function :uiDrawClip, [DrawContext, DrawPath], :void
+    attach_function :uiDrawSave, [DrawContext], :void
+    attach_function :uiDrawRestore, [DrawContext], :void
+
+    attach_function :uiDrawListFontFamilies, [], FontFamilies
+    attach_function :uiDrawFontFamiliesNumFamilies, [FontFamilies], :uintmax_t
+
+    attach_function :uiDrawFontFamiliesFamily, [FontFamilies, :uintmax_t], :char
+    attach_function :uiDrawFreeFontFamilies, [FontFamilies], :void
+
+    # TODO example ...
+    attach_function :uiDrawLoadClosestFont, [FontDescriptor], TextFont
+    attach_function :uiDrawFreeTextFont, [TextFont], :void
+    attach_function :uiDrawTextFontHandle, [TextFont], :uintptr_t
+    attach_function :uiDrawTextFontDescribe, [TextFont, FontDescriptor], :void
+    attach_function :uiDrawTextFontGetMetrics, [TextFont, FontMetrics], :void
+
+    attach_function :uiDrawNewTextLayout, [
+      :string, # text
+      TextFont, # defaultFont
+      :double,  #width
+    ], TextLayout
+
+    attach_function :uiDrawFreeTextLayout, [TextLayout], :void
+    attach_function :uiDrawTextLayoutSetWidth, [TextLayout, :double], :void #width
+    attach_function :uiDrawTextLayoutExtents, [
+      TextLayout,
+      :double, #width
+      :double #height
+    ], :void
+
+    attach_function :uiDrawTextLayoutSetColor, [
+      TextLayout,
+      :intmax_t, #startChar
+      :intmax_t, #endChar
+      :double, #r
+      :double, #g
+      :double, #b
+      :double, #a
+    ], :void
+
+    attach_function :uiDrawText, [
+      DrawContext,
+      :double, #x
+      :double, #y
+      TextLayout
+    ], :void
   end
 end
