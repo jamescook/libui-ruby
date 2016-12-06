@@ -10,4 +10,6 @@ Gem::Specification.new do |s|
   s.files = `git ls-files README.md LICENSE lib`.split
 
   s.add_runtime_dependency 'ffi', '~> 1.9', '>= 1.9.14'
+
+  s.test_files = `git ls-files spec examples`.split
 end
