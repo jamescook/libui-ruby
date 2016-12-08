@@ -14,15 +14,9 @@ module LibUI
     private
 
     def default_local_library_path
-      File.join(File.dirname(File.expand_path(__FILE__)), default_library_name)
-    end
-
-    def default_library_name
-      case Utils.os 
-      when :macosx       then "libui.dylib"
-      when :windows      then "libui.dll" # TODO Verify ...
-      when :linux, :unix then "libui.so"
-      end
+      ext = RbConfig::CONFIG['DLEXT']
+      dir = RbConfig::CONFIG['libdir']
+      File.join(dir, "libui.#{ext}")
     end
   end
 end

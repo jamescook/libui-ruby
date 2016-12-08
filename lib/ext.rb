@@ -122,11 +122,11 @@ module LibUI
         :y,           :double,
         :area_width,  :double,
         :area_height, :double,
-        :down,        :uintmax_t,
-        :up,          :uintmax_t,
-        :count,       :uintmax_t,
+        :down,        :ulong_long,
+        :up,          :ulong_long,
+        :count,       :ulong_long,
         :modifiers,   KEY_MODIFIERS,
-        :held1to64,   :uint64_t
+        :held1to64,   :ulong_long
     end
 
     class FontFamilies < FFI::Struct
@@ -455,15 +455,15 @@ module LibUI
     attach_function :uiDrawRestore, [DrawContext], :void
 
     attach_function :uiDrawListFontFamilies, [], FontFamilies
-    attach_function :uiDrawFontFamiliesNumFamilies, [FontFamilies], :uintmax_t
+    attach_function :uiDrawFontFamiliesNumFamilies, [FontFamilies], :ulong_long
 
-    attach_function :uiDrawFontFamiliesFamily, [FontFamilies, :uintmax_t], :char
+    attach_function :uiDrawFontFamiliesFamily, [FontFamilies, :ulong_long], :char
     attach_function :uiDrawFreeFontFamilies, [FontFamilies], :void
 
     # TODO example ...
     attach_function :uiDrawLoadClosestFont, [FontDescriptor], TextFont
     attach_function :uiDrawFreeTextFont, [TextFont], :void
-    attach_function :uiDrawTextFontHandle, [TextFont], :uintptr_t
+    attach_function :uiDrawTextFontHandle, [TextFont], :ulong
     attach_function :uiDrawTextFontDescribe, [TextFont, FontDescriptor], :void
     attach_function :uiDrawTextFontGetMetrics, [TextFont, FontMetrics], :void
 
@@ -483,8 +483,8 @@ module LibUI
 
     attach_function :uiDrawTextLayoutSetColor, [
       TextLayout,
-      :intmax_t, #startChar
-      :intmax_t, #endChar
+      :long_long, #startChar
+      :long_long, #endChar
       :double, #r
       :double, #g
       :double, #b
