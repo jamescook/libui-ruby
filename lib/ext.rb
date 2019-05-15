@@ -463,19 +463,6 @@ module LibUI
     attach_function :uiDrawSave, [DrawContext], :void
     attach_function :uiDrawRestore, [DrawContext], :void
 
-    attach_function :uiDrawListFontFamilies, [], FontFamilies
-    attach_function :uiDrawFontFamiliesNumFamilies, [FontFamilies], :uintmax_t
-
-    attach_function :uiDrawFontFamiliesFamily, [FontFamilies, :uintmax_t], :char
-    attach_function :uiDrawFreeFontFamilies, [FontFamilies], :void
-
-    # TODO example ...
-    attach_function :uiDrawLoadClosestFont, [FontDescriptor], TextFont
-    attach_function :uiDrawFreeTextFont, [TextFont], :void
-    attach_function :uiDrawTextFontHandle, [TextFont], :uintptr_t
-    attach_function :uiDrawTextFontDescribe, [TextFont, FontDescriptor], :void
-    attach_function :uiDrawTextFontGetMetrics, [TextFont, FontMetrics], :void
-
     attach_function :uiDrawNewTextLayout, [
       :string, # text
       TextFont, # defaultFont
@@ -483,21 +470,10 @@ module LibUI
     ], TextLayout
 
     attach_function :uiDrawFreeTextLayout, [TextLayout], :void
-    attach_function :uiDrawTextLayoutSetWidth, [TextLayout, :double], :void #width
     attach_function :uiDrawTextLayoutExtents, [
       TextLayout,
       :double, #width
       :double #height
-    ], :void
-
-    attach_function :uiDrawTextLayoutSetColor, [
-      TextLayout,
-      :intmax_t, #startChar
-      :intmax_t, #endChar
-      :double, #r
-      :double, #g
-      :double, #b
-      :double, #a
     ], :void
 
     attach_function :uiDrawText, [
