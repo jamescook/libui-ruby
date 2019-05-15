@@ -1,11 +1,11 @@
 ## libui ruby binding
 
-WIP Ruby bindings for [LibUI](https://github.com/andlabs/libui)
+Ruby bindings for [LibUI](https://github.com/andlabs/libui)
 
 #### Running the example control gallery
-- Set `LibUI::Config.instance.library_path` to point to your local
-compiled libui library
+- Compile and install libui per the documentation.
 - `bundle exec ruby examples/control_gallery.rb`
+- `bundle exec ruby examples/histogram.rb`
 
 #### Screenshots
 

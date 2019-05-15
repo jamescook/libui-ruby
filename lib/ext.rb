@@ -3,7 +3,7 @@ require "ffi"
 module LibUI
   module Ext
     extend FFI::Library
-    ffi_lib Config.instance.library_path
+    ffi_lib "libui"
 
     DEFAULT_MITER_LIMIT = 10
 
