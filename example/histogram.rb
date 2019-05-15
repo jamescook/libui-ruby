@@ -1,9 +1,7 @@
 # This example attempts to follow the code in https://github.com/andlabs/libui/blob/a038923060f4183ff6d62faa94d2c56e49f52831/examples/histogram/main.c
 
 #CG_CONTEXT_SHOW_BACKTRACE=1 bundle exec ruby example/histogram.rb
-require_relative "../lib/libui"
-# Set the library path if needed
-# LibUI::Config.instance.library_path = "/path/to/your/libui.dll"
+require "libui"
 
 X_OFF_LEFT = 20
 Y_OFF_TOP  = 20

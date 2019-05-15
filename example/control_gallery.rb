@@ -1,6 +1,4 @@
-require_relative "../lib/libui"
-# Set the library path if needed
-# LibUI::Config.instance.library_path = "/path/to/your/libui.dll"
+require "libui"
 
 options =  LibUI::Ext::InitOptions.new
 init    =  LibUI::Ext.uiInit(options)

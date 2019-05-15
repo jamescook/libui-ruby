@@ -1,2 +1,2 @@
-gem "ffi"
 gem "pry"
+gemspec

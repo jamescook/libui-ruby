@@ -4,8 +4,9 @@ Ruby bindings for [LibUI](https://github.com/andlabs/libui)
 
 #### Running the example control gallery
 - Compile and install libui per the documentation.
-- `bundle exec ruby examples/control_gallery.rb`
-- `bundle exec ruby examples/histogram.rb`
+- `gem install libui-ruby`
+- `ruby examples/control_gallery.rb`
+- `ruby examples/histogram.rb`
 
 #### Screenshots
 
