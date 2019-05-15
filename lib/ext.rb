@@ -328,7 +328,16 @@ module LibUI
       :pointer
     ], :void
 
-    attach_function :uiNewEditableCombobox,       [], EditableCombobox
+    callback :editable_combobox_selected_callback,   [:pointer],          :int
+    attach_function :uiEditableComboboxOnChanged,  [
+      EditableCombobox,
+      :editable_combobox_selected_callback,
+      :pointer
+    ], :void
+    attach_function :uiEditableComboboxText,    [EditableCombobox], :string
+    attach_function :uiEditableComboboxAppend,  [EditableCombobox, :string], :void
+    attach_function :uiEditableComboboxSetText, [EditableCombobox, :string], :void
+    attach_function :uiNewEditableCombobox,     [], EditableCombobox
 
     attach_function :uiNewRadioButtons,     [],                      Radiobuttons
     attach_function :uiRadioButtonsAppend,  [Radiobuttons, :string], Radiobuttons

@@ -134,11 +134,11 @@ LibUI::Ext.uiComboboxAppend(cbox, "Combobox Item 3")
 LibUI::Ext.uiBoxAppend(inner, cbox, 0)
 LibUI::Ext.uiComboboxOnSelected(cbox, combobox_selected_callback, nil)
 
-cbox = LibUI::Ext.uiNewEditableCombobox
-LibUI::Ext.uiComboboxAppend(cbox, "Editable Item 1")
-LibUI::Ext.uiComboboxAppend(cbox, "Editable Item 2")
-LibUI::Ext.uiComboboxAppend(cbox, "Editable Item 3")
-LibUI::Ext.uiBoxAppend(inner, cbox, 0)
+ebox = LibUI::Ext.uiNewEditableCombobox
+LibUI::Ext.uiEditableComboboxAppend(ebox, "Editable Item 1")
+LibUI::Ext.uiEditableComboboxAppend(ebox, "Editable Item 2")
+LibUI::Ext.uiEditableComboboxAppend(ebox, "Editable Item 3")
+LibUI::Ext.uiBoxAppend(inner, ebox, 0)
 
 rb = LibUI::Ext.uiNewRadioButtons
 LibUI::Ext.uiRadioButtonsAppend(rb, "Radio Button 1")
